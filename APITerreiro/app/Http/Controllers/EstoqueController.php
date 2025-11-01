@@ -27,31 +27,37 @@ class EstoqueController extends Controller
     /**
      * Cadastra um novo item de estoque (adm e auxiliar podem cadastrar)
      */
-    public function store(Request $request)
-    {
-        $usuario = Usuario::find($request->id_usuario);
+   public function store(Request $request)
+{
+    $usuario = Usuario::find($request->id_usuario);
 
-        if (!$usuario) {
-            return response()->json(['erro' => 'Usuário não encontrado'], 404);
-        }
-
-        $request->validate([
-            'produto' => 'required|string|max:100',
-            'quantidade' => 'required|integer|min:0',
-            'origem' => 'required|in:compra,doacao',
-        ]);
-
-        $data = $request->all();
-        $data['id_terreiro'] = $usuario->id_terreiro;
-
-        if ($request->hasFile('anexo')) {
-            $path = $request->file('anexo')->store('uploads/estoque', 'public');
-            $data['anexo'] = $path;
-        }
-
-        $estoque = Estoque::create($data);
-        return response()->json($estoque, 201);
+    if (!$usuario) {
+        return response()->json(['erro' => 'Usuário não encontrado'], 404);
     }
+
+    $request->validate([
+        'produto' => 'required|string|max:100',
+        'quantidade' => 'required|integer|min:0',
+        'origem' => 'required|in:compra,doacao',
+    ]);
+
+    $data = $request->all();
+    $data['id_terreiro'] = $usuario->id_terreiro;
+
+    if ($request->hasFile('anexo')) {
+        $path = $request->file('anexo')->store('uploads/estoque', 'public');
+        $data['anexo'] = $path;
+    }
+
+    // 🔹 Cria o registro no banco
+    $estoque = Estoque::create($data);
+
+    // 🔹 Adiciona a URL completa do arquivo
+    $estoque->anexo_url = $estoque->anexo ? asset('storage/' . $estoque->anexo) : null;
+
+    return response()->json($estoque, 201);
+}
+
 
     /**
      * Mostra um item de estoque específico (ambos podem ver)
@@ -103,8 +109,11 @@ class EstoqueController extends Controller
             $data['anexo'] = $path;
         }
 
-        $estoque->update($data);
-        return response()->json($estoque, 200);
+    $estoque->update($data);
+$estoque->anexo_url = $estoque->anexo ? asset('storage/' . $estoque->anexo) : null;
+return response()->json($estoque, 200);
+
+
     }
 
     /**

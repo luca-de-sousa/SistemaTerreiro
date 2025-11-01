@@ -27,39 +27,42 @@ class FinancasController extends Controller
     /**
      * Cadastra uma nova movimentação financeira.
      */
-    public function store(Request $request)
-    {
-        $usuario = Usuario::find($request->id_usuario);
+   public function store(Request $request)
+{
+    $usuario = Usuario::find($request->id_usuario);
 
-        if (!$usuario) {
-            return response()->json(['erro' => 'Usuário não encontrado'], 404);
-        }
-
-        // adm e auxiliar podem cadastrar
-        if (!in_array($usuario->tipo, ['adm', 'auxiliar'])) {
-            return response()->json(['erro' => 'Permissão negada'], 403);
-        }
-
-        // validação
-        $request->validate([
-            'tipo' => 'required|in:arrecadacao,despesa,estoque_entrada,estoque_saida',
-            'descricao' => 'required|string|max:150',
-            'valor' => 'required|numeric|min:0',
-            'data' => 'required|date',
-        ]);
-
-        $data = $request->all();
-        $data['id_terreiro'] = $usuario->id_terreiro;
-
-        // upload (opcional)
-        if ($request->hasFile('anexo')) {
-            $path = $request->file('anexo')->store('uploads/financas', 'public');
-            $data['anexo'] = $path;
-        }
-
-        $financa = Financas::create($data);
-        return response()->json($financa, 201);
+    if (!$usuario) {
+        return response()->json(['erro' => 'Usuário não encontrado'], 404);
     }
+
+    if (!in_array($usuario->tipo, ['adm', 'auxiliar'])) {
+        return response()->json(['erro' => 'Permissão negada'], 403);
+    }
+
+    $request->validate([
+        'tipo' => 'required|in:arrecadacao,despesa,estoque_entrada,estoque_saida',
+        'descricao' => 'required|string|max:150',
+        'valor' => 'required|numeric|min:0',
+        'data' => 'required|date',
+    ]);
+
+    $data = $request->all();
+    $data['id_terreiro'] = $usuario->id_terreiro;
+
+    if ($request->hasFile('anexo')) {
+        $path = $request->file('anexo')->store('uploads/financas', 'public');
+        $data['anexo'] = $path;
+    }
+
+    // 🔹 Cria a movimentação
+    $financa = Financas::create($data);
+
+    // 🔹 Adiciona a URL completa do arquivo
+    $financa->anexo_url = $financa->anexo ? asset('storage/' . $financa->anexo) : null;
+
+    return response()->json($financa, 201);
+}
+
 
     /**
      * Exibe uma movimentação financeira específica.
@@ -113,8 +116,11 @@ class FinancasController extends Controller
             $data['anexo'] = $path;
         }
 
-        $financa->update($data);
-        return response()->json($financa, 200);
+       $financa->update($data);
+$financa->anexo_url = $financa->anexo ? asset('storage/' . $financa->anexo) : null;
+return response()->json($financa, 200);
+
+
     }
 
     /**
