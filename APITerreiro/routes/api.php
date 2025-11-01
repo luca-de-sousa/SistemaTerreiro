@@ -12,3 +12,9 @@ Route::resource('usuario', UsuarioController::class);
 
 use App\Http\Controller\EstoqueController;
 Route::resource('estoque', EstoqueController::class);
+
+use App\Http\Controller\FinancasController;
+Route::resource('financas', FinancasController::class);
+
+use App\Http\Controller\TerreiroController;
+Route::resource('terreiro', TerreiroController::class);
