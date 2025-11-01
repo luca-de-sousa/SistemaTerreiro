@@ -1,0 +1,1 @@
+"# SistemaTerreiro"  initgit add README.mdgit commit -m "first commit"git branch -M maingit remote add origin https://github.com/luca-de-sousa/SistemaTerreiro.gitgit push -u origin main
