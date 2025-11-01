@@ -38,3 +38,6 @@ CREATE TABLE financas (
     data DATE NOT NULL,
     FOREIGN KEY (id_terreiro) REFERENCES terreiro(id) ON DELETE CASCADE
 );
+
+ALTER TABLE financas ADD COLUMN anexo VARCHAR(255) NULL;
+ALTER TABLE estoque ADD COLUMN anexo VARCHAR(255) NULL;
