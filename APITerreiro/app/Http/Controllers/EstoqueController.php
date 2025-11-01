@@ -3,66 +3,130 @@
 namespace App\Http\Controllers;
 
 use App\Models\Estoque;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 
 class EstoqueController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Lista todos os registros de estoque (adm e auxiliar podem visualizar)
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Estoque::all();
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        // Ambos podem visualizar apenas o próprio terreiro
+        $estoques = Estoque::where('id_terreiro', $usuario->id_terreiro)->get();
+        return response()->json($estoques);
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Cadastra um novo item de estoque (adm e auxiliar podem cadastrar)
      */
     public function store(Request $request)
     {
-        $estoque = Estoque::create( $request->all() );
-        return $estoque;
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        $request->validate([
+            'produto' => 'required|string|max:100',
+            'quantidade' => 'required|integer|min:0',
+            'origem' => 'required|in:compra,doacao',
+        ]);
+
+        $data = $request->all();
+        $data['id_terreiro'] = $usuario->id_terreiro;
+
+        if ($request->hasFile('anexo')) {
+            $path = $request->file('anexo')->store('uploads/estoque', 'public');
+            $data['anexo'] = $path;
+        }
+
+        $estoque = Estoque::create($data);
+        return response()->json($estoque, 201);
     }
 
     /**
-     * Display the specified resource.
+     * Mostra um item de estoque específico (ambos podem ver)
      */
-    public function show(Estoque $estoque)
+    public function show(Request $request, Estoque $estoque)
     {
-        return $estoque;
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if ($usuario->id_terreiro !== $estoque->id_terreiro) {
+            return response()->json(['erro' => 'Acesso negado'], 403);
+        }
+
+        return response()->json($estoque);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Estoque $estoque)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
+     * Atualiza um item (somente adm)
      */
     public function update(Request $request, Estoque $estoque)
     {
-        $estoque->update( $request->all() );
-        return $estoque;
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if ($usuario->tipo !== 'adm') {
+            return response()->json(['erro' => 'Apenas administradores podem editar itens'], 403);
+        }
+
+        if ($usuario->id_terreiro !== $estoque->id_terreiro) {
+            return response()->json(['erro' => 'Acesso negado a este item'], 403);
+        }
+
+        $request->validate([
+            'produto' => 'sometimes|string|max:100',
+            'quantidade' => 'sometimes|integer|min:0',
+            'origem' => 'sometimes|in:compra,doacao',
+        ]);
+
+        $data = $request->all();
+
+        if ($request->hasFile('anexo')) {
+            $path = $request->file('anexo')->store('uploads/estoque', 'public');
+            $data['anexo'] = $path;
+        }
+
+        $estoque->update($data);
+        return response()->json($estoque, 200);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove um item (somente adm)
      */
-    public function destroy(Estoque $estoque)
+    public function destroy(Request $request, Estoque $estoque)
     {
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if ($usuario->tipo !== 'adm') {
+            return response()->json(['erro' => 'Apenas administradores podem excluir itens'], 403);
+        }
+
+        if ($usuario->id_terreiro !== $estoque->id_terreiro) {
+            return response()->json(['erro' => 'Acesso negado a este item'], 403);
+        }
+
         $estoque->delete();
-        return $estoque;
+        return response()->json(['mensagem' => 'Item removido com sucesso']);
     }
 }

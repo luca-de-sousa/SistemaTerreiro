@@ -3,66 +3,140 @@
 namespace App\Http\Controllers;
 
 use App\Models\Financas;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 
 class FinancasController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Lista todos os registros financeiros do terreiro do usuário.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Financas::all();
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        // Ambos (adm e auxiliar) podem visualizar as finanças do próprio terreiro
+        $financas = Financas::where('id_terreiro', $usuario->id_terreiro)->get();
+        return response()->json($financas);
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Cadastra uma nova movimentação financeira.
      */
     public function store(Request $request)
     {
-        $financas = Financas::create( $request->all() );
-        return $financas;
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        // adm e auxiliar podem cadastrar
+        if (!in_array($usuario->tipo, ['adm', 'auxiliar'])) {
+            return response()->json(['erro' => 'Permissão negada'], 403);
+        }
+
+        // validação
+        $request->validate([
+            'tipo' => 'required|in:arrecadacao,despesa,estoque_entrada,estoque_saida',
+            'descricao' => 'required|string|max:150',
+            'valor' => 'required|numeric|min:0',
+            'data' => 'required|date',
+        ]);
+
+        $data = $request->all();
+        $data['id_terreiro'] = $usuario->id_terreiro;
+
+        // upload (opcional)
+        if ($request->hasFile('anexo')) {
+            $path = $request->file('anexo')->store('uploads/financas', 'public');
+            $data['anexo'] = $path;
+        }
+
+        $financa = Financas::create($data);
+        return response()->json($financa, 201);
     }
 
     /**
-     * Display the specified resource.
+     * Exibe uma movimentação financeira específica.
      */
-    public function show(Financas $financas)
+    public function show(Request $request, Financas $financa)
     {
-        return $financas;
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        // só pode visualizar finanças do próprio terreiro
+        if ($usuario->id_terreiro !== $financa->id_terreiro) {
+            return response()->json(['erro' => 'Acesso negado'], 403);
+        }
+
+        return response()->json($financa);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Atualiza uma movimentação financeira (somente adm).
      */
-    public function edit(Financas $financas)
+    public function update(Request $request, Financas $financa)
     {
-        //
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if ($usuario->tipo !== 'adm') {
+            return response()->json(['erro' => 'Apenas administradores podem editar registros'], 403);
+        }
+
+        if ($usuario->id_terreiro !== $financa->id_terreiro) {
+            return response()->json(['erro' => 'Acesso negado a este registro'], 403);
+        }
+
+        $request->validate([
+            'tipo' => 'sometimes|in:arrecadacao,despesa,estoque_entrada,estoque_saida',
+            'descricao' => 'sometimes|string|max:150',
+            'valor' => 'sometimes|numeric|min:0',
+            'data' => 'sometimes|date',
+        ]);
+
+        $data = $request->all();
+
+        if ($request->hasFile('anexo')) {
+            $path = $request->file('anexo')->store('uploads/financas', 'public');
+            $data['anexo'] = $path;
+        }
+
+        $financa->update($data);
+        return response()->json($financa, 200);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Remove uma movimentação financeira (somente adm).
      */
-    public function update(Request $request, Financas $financas)
+    public function destroy(Request $request, Financas $financa)
     {
-        $financas->update( $request->all() );
-        return $financas;
-    }
+        $usuario = Usuario::find($request->id_usuario);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Financas $financas)
-    {
-        $financas->delete();
-        return $financas;
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if ($usuario->tipo !== 'adm') {
+            return response()->json(['erro' => 'Apenas administradores podem excluir registros'], 403);
+        }
+
+        if ($usuario->id_terreiro !== $financa->id_terreiro) {
+            return response()->json(['erro' => 'Acesso negado a este registro'], 403);
+        }
+
+        $financa->delete();
+        return response()->json(['mensagem' => 'Registro removido com sucesso']);
     }
 }

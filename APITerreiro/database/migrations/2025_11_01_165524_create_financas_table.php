@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('financas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_terreiro')
-                  ->constrained('terreiro')
+                  ->constrained('terreiros')
                   ->onDelete('cascade');
             $table->enum('tipo', ['arrecadacao', 'despesa', 'estoque_entrada', 'estoque_saida']);
             $table->string('descricao', 150);

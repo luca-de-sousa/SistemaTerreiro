@@ -8,16 +8,18 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('usuarios', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('id_terreiro')
-                  ->constrained('terreiro')
-                  ->onDelete('cascade');
-            $table->string('nome', 100);
-            $table->string('usuario', 50)->unique();
-            $table->string('senha', 255);
-            $table->enum('tipo', ['adm', 'auxiliar']);
-            $table->timestamps();
-        });
+    $table->id();
+    $table->foreignId('id_terreiro')->constrained('terreiros')->onDelete('cascade');
+    $table->string('nome');
+    $table->string('usuario')->unique();
+    $table->string('senha');
+    $table->enum('tipo', ['adm', 'auxiliar']);
+    $table->timestamps();
+
+    // 🔒 Garante 1 adm e 1 auxiliar por terreiro
+    $table->unique(['id_terreiro', 'tipo']);
+});
+
     }
 
     public function down(): void

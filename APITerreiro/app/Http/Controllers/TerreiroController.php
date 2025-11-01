@@ -3,66 +3,114 @@
 namespace App\Http\Controllers;
 
 use App\Models\Terreiro;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 
 class TerreiroController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Lista o terreiro do usuário logado.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Terreiro::all();
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        // O auxiliar e o adm veem apenas o próprio terreiro
+        $terreiro = Terreiro::where('id', $usuario->id_terreiro)->first();
+
+        if (!$terreiro) {
+            return response()->json(['erro' => 'Terreiro não encontrado'], 404);
+        }
+
+        return response()->json($terreiro);
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Cadastra um novo terreiro (somente adm geral do sistema).
+     * Obs: se teu sistema não tem "adm geral", mantenha assim para segurança.
      */
     public function store(Request $request)
     {
-        $terreiro = Terreiro::create( $request->all() );
-        return $terreiro;
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        // Somente administradores podem criar novos terreiros
+        if ($usuario->tipo !== 'adm') {
+            return response()->json(['erro' => 'Apenas administradores podem criar terreiros'], 403);
+        }
+
+        $request->validate([
+            'nome_terreiro' => 'required|string|max:100'
+        ]);
+
+        $terreiro = Terreiro::create($request->all());
+        return response()->json($terreiro, 201);
     }
 
     /**
-     * Display the specified resource.
+     * Exibe o terreiro, desde que pertença ao usuário.
      */
-    public function show(Terreiro $terreiro)
+    public function show(Request $request, Terreiro $terreiro)
     {
-        return $terreiro;
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if ($usuario->id_terreiro !== $terreiro->id) {
+            return response()->json(['erro' => 'Acesso negado a este terreiro'], 403);
+        }
+
+        return response()->json($terreiro);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Atualiza o terreiro (somente adm do próprio terreiro).
      */
-    public function edit(Terreiro $terreiro)
+    public function update(Request $request, Terreiro $terreiro)
     {
-        //
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if ($usuario->tipo !== 'adm' || $usuario->id_terreiro !== $terreiro->id) {
+            return response()->json(['erro' => 'Apenas o administrador do próprio terreiro pode editar'], 403);
+        }
+
+        $request->validate([
+            'nome_terreiro' => 'sometimes|string|max:100'
+        ]);
+
+        $terreiro->update($request->all());
+        return response()->json($terreiro, 200);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Remove um terreiro (somente adm do próprio terreiro).
      */
-    public function update(Request $request, Usuario $terreiro)
+    public function destroy(Request $request, Terreiro $terreiro)
     {
-        $terreiro->update( $request->all() );
-        return $terreiro;
-    }
+        $usuario = Usuario::find($request->id_usuario);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Usuario $terreiro)
-    {
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if ($usuario->tipo !== 'adm' || $usuario->id_terreiro !== $terreiro->id) {
+            return response()->json(['erro' => 'Apenas o administrador do próprio terreiro pode excluir'], 403);
+        }
+
         $terreiro->delete();
-        return $terreiro;
+        return response()->json(['mensagem' => 'Terreiro removido com sucesso']);
     }
 }

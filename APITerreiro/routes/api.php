@@ -1,20 +1,18 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\EstoqueController;
+use App\Http\Controllers\FinancasController;
+use App\Http\Controllers\TerreiroController;
+use App\Http\Controllers\AuthController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// 🔐 Rotas de autenticação
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);
 
-use App\Http\Controller\UsuarioController;
-Route::resource('usuario', UsuarioController::class);
-
-use App\Http\Controller\EstoqueController;
-Route::resource('estoque', EstoqueController::class);
-
-use App\Http\Controller\FinancasController;
-Route::resource('financas', FinancasController::class);
-
-use App\Http\Controller\TerreiroController;
-Route::resource('terreiro', TerreiroController::class);
+// 🌍 Rotas principais da API
+Route::apiResource('usuarios', UsuarioController::class);
+Route::apiResource('estoque', EstoqueController::class);
+Route::apiResource('financas', FinancasController::class);
+Route::apiResource('terreiros', TerreiroController::class);

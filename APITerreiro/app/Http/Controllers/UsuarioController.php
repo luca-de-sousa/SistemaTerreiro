@@ -4,65 +4,146 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Lista usuários do mesmo terreiro (somente adm).
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Usuario::all();
+        $usuario = Usuario::find($request->id_usuario);
+
+        if (!$usuario) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        // Somente adm pode listar usuários
+        if ($usuario->tipo !== 'adm') {
+            return response()->json(['erro' => 'Apenas administradores podem visualizar usuários'], 403);
+        }
+
+        // Exibe apenas os usuários do mesmo terreiro
+        $usuarios = Usuario::where('id_terreiro', $usuario->id_terreiro)->get();
+
+        return response()->json($usuarios);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Cadastra um novo usuário (somente adm do terreiro pode).
+     * 🔒 Garante no máximo 1 adm e 1 auxiliar por terreiro.
      */
-    public function create()
+   public function store(StoreUsuarioRequest $request)
+{
+    $usuarioAutenticado = Usuario::find($request->id_usuario);
+
+    if (!$usuarioAutenticado) {
+        return response()->json(['erro' => 'Usuário não encontrado'], 404);
+    }
+
+    if ($usuarioAutenticado->tipo !== 'adm') {
+        return response()->json(['erro' => 'Apenas administradores podem cadastrar usuários'], 403);
+    }
+
+    // Garante apenas 1 adm e 1 auxiliar por terreiro
+    $existeMesmoTipo = Usuario::where('id_terreiro', $usuarioAutenticado->id_terreiro)
+        ->where('tipo', $request->tipo)
+        ->exists();
+
+    if ($existeMesmoTipo) {
+        return response()->json([
+            'erro' => "Já existe um usuário do tipo '{$request->tipo}' neste terreiro"
+        ], 422);
+    }
+
+    $data = $request->validated(); // ✅ dados já validados automaticamente
+    $data['id_terreiro'] = $usuarioAutenticado->id_terreiro;
+    $data['senha'] = Hash::make($data['senha']);
+
+    $novoUsuario = Usuario::create($data);
+    return response()->json($novoUsuario, 201);
+}
+
+
+    /**
+     * Mostra um usuário específico.
+     * adm pode ver qualquer um do terreiro, auxiliar só a si mesmo.
+     */
+    public function show(Request $request, Usuario $usuario)
     {
-        //
+        $usuarioAutenticado = Usuario::find($request->id_usuario);
+
+        if (!$usuarioAutenticado) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if (
+            $usuarioAutenticado->tipo !== 'adm' &&
+            $usuarioAutenticado->id !== $usuario->id
+        ) {
+            return response()->json(['erro' => 'Sem permissão para visualizar este usuário'], 403);
+        }
+
+        // Garante que sejam do mesmo terreiro
+        if ($usuarioAutenticado->id_terreiro !== $usuario->id_terreiro) {
+            return response()->json(['erro' => 'Usuário de outro terreiro'], 403);
+        }
+
+        return response()->json($usuario);
     }
 
     /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $usuario = Usuario::create( $request->all() );
-        return $usuario;
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Usuario $usuario)
-    {
-        return $usuario;
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Usuario $usuario)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
+     * Atualiza dados do usuário (adm pode editar todos; auxiliar só ele mesmo).
      */
     public function update(Request $request, Usuario $usuario)
     {
-        $usuario->update( $request->all() );
-        return $usuario;
+        $usuarioAutenticado = Usuario::find($request->id_usuario);
+
+        if (!$usuarioAutenticado) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        // Restringe quem pode atualizar
+        if (
+            $usuarioAutenticado->tipo !== 'adm' &&
+            $usuarioAutenticado->id !== $usuario->id
+        ) {
+            return response()->json(['erro' => 'Sem permissão para editar este usuário'], 403);
+        }
+
+        // Impede mudar tipo/id_terreiro manualmente
+        $data = $request->except(['id_terreiro', 'tipo']);
+
+        // Criptografa a senha se for alterada
+        if (!empty($data['senha'])) {
+            $data['senha'] = Hash::make($data['senha']);
+        }
+
+        $usuario->update($data);
+        return response()->json($usuario, 200);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Exclui um usuário (somente adm do mesmo terreiro).
      */
-    public function destroy(Usuario $usuario)
+    public function destroy(Request $request, Usuario $usuario)
     {
+        $usuarioAutenticado = Usuario::find($request->id_usuario);
+
+        if (!$usuarioAutenticado) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if ($usuarioAutenticado->tipo !== 'adm') {
+            return response()->json(['erro' => 'Apenas administradores podem excluir usuários'], 403);
+        }
+
+        if ($usuarioAutenticado->id_terreiro !== $usuario->id_terreiro) {
+            return response()->json(['erro' => 'Usuário pertence a outro terreiro'], 403);
+        }
+
         $usuario->delete();
-        return $usuario;
+        return response()->json(['mensagem' => 'Usuário removido com sucesso']);
     }
 }

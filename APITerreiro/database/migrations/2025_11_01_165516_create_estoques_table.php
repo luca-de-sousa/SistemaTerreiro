@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('estoque', function (Blueprint $table) {
+        Schema::create('estoques', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_terreiro')
-                  ->constrained('terreiro')
+                  ->constrained('terreiros')
                   ->onDelete('cascade');
             $table->string('produto', 100);
             $table->integer('quantidade')->default(0);
@@ -23,6 +23,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('estoque');
+        Schema::dropIfExists('estoques');
     }
 };
