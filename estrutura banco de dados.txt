@@ -1,4 +1,10 @@
-CREATE DATABASE IF NOT EXISTS expo_terreiro;
+-- Criar o banco de dados
+CREATE DATABASE IF NOT EXISTS expo_terreiro
+    DEFAULT CHARACTER SET utf8mb4
+    DEFAULT COLLATE utf8mb4_general_ci;
+
+-- Selecionar o banco
+USE expo_terreiro;
 
 -- Tabela: terreiro
 CREATE TABLE terreiro (
@@ -25,6 +31,7 @@ CREATE TABLE estoque (
     quantidade INT DEFAULT 0,
     origem ENUM('compra', 'doacao') NOT NULL,
     data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    anexo VARCHAR(255) NULL,
     FOREIGN KEY (id_terreiro) REFERENCES terreiro(id) ON DELETE CASCADE
 );
 
@@ -36,8 +43,7 @@ CREATE TABLE financas (
     descricao VARCHAR(150) NOT NULL,
     valor DECIMAL(10,2) NOT NULL,
     data DATE NOT NULL,
+    anexo VARCHAR(255) NULL,
     FOREIGN KEY (id_terreiro) REFERENCES terreiro(id) ON DELETE CASCADE
 );
 
-ALTER TABLE financas ADD COLUMN anexo VARCHAR(255) NULL;
-ALTER TABLE estoque ADD COLUMN anexo VARCHAR(255) NULL;
