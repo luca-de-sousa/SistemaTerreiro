@@ -1,60 +1,65 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import api from "../src/services/api";
 
-export default function LoginScreen() {
+export default function Login() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [usuario, setUsuario] = useState("");
+  const [senha, setSenha] = useState("");
 
   async function handleLogin() {
+    if (!usuario || !senha) {
+      return Alert.alert("Preencha todos os campos.");
+    }
+
     try {
-      const response = await api.post("/login", { email, password });
-      console.log(response.data);
-      Alert.alert("Sucesso", "Login realizado!");
-      router.push("/(tabs)/home");
-    } catch (error: any) {
-      console.log(error.response?.data || error);
-      Alert.alert("Erro", "Usuário ou senha inválidos");
+      const response = await api.post("/login", { usuario, senha });
+
+      await AsyncStorage.setItem("token", response.data.token);
+      await AsyncStorage.setItem("usuario", JSON.stringify(response.data.usuario));
+
+      router.push("/home"); // ✅ AGORA FUNCIONA
+
+    } catch (error) {
+      Alert.alert("Erro no login", "Usuário ou senha incorretos.");
     }
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sistema de Gestão de Terreiro</Text>
+    <View style={{ padding: 20 }}>
+      <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 20 }}>
+        Login
+      </Text>
 
       <TextInput
-        style={styles.input}
-        placeholder="E-mail"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
+        placeholder="Usuário"
+        value={usuario}
+        onChangeText={setUsuario}
+        style={{ borderWidth: 1, padding: 10, marginTop: 20 }}
       />
+
       <TextInput
-        style={styles.input}
         placeholder="Senha"
-        value={password}
-        onChangeText={setPassword}
         secureTextEntry
+        value={senha}
+        onChangeText={setSenha}
+        style={{ borderWidth: 1, padding: 10, marginTop: 10 }}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Entrar</Text>
+      <TouchableOpacity
+        onPress={handleLogin}
+        style={{ backgroundColor: "#333", padding: 15, marginTop: 20, borderRadius: 5 }}
+      >
+        <Text style={{ color: "#fff", textAlign: "center", fontSize: 16 }}>Entrar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/cadastro")}>
-        <Text style={styles.link}>Cadastrar-se</Text>
+      <TouchableOpacity onPress={() => router.push("/cadastro")} style={{ marginTop: 25 }}>
+        <Text style={{ textAlign: "center", color: "#007bff", fontSize: 15 }}>
+          Não é cadastrado? <Text style={{ fontWeight: "bold" }}>Cadastre-se</Text>
+        </Text>
       </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#fff" },
-  title: { fontSize: 20, fontWeight: "bold", marginBottom: 20 },
-  input: { width: "100%", borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, marginBottom: 10 },
-  button: { backgroundColor: "#4CAF50", padding: 12, borderRadius: 8, width: "100%", alignItems: "center" },
-  buttonText: { color: "#fff", fontSize: 16 },
-  link: { color: "#007BFF", marginTop: 10 },
-});
