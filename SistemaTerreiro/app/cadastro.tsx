@@ -1,39 +1,60 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity } from "react-native";
 import api from "../src/services/api";
 
 export default function Cadastro() {
-  const [nome, setNome] = useState("");
-  const [usuario, setUsuario] = useState("");
-  const [senha, setSenha] = useState("");
+  const router = useRouter();
+
+  const [dados, setDados] = useState({
+    nome_terreiro: "",
+    nome_adm: "",
+    usuario_adm: "",
+    senha_adm: "",
+    nome_aux: "",
+    usuario_aux: "",
+    senha_aux: "",
+  });
+
+  function handleChange(campo: string, valor: string) {
+    setDados({ ...dados, [campo]: valor });
+  }
 
   async function handleCadastro() {
-    try {
-      await api.post("/usuarios", {
-        nome,
-        usuario,
-        senha,
-        tipo: "auxiliar"
-      });
+    if (!dados.nome_terreiro || !dados.nome_adm || !dados.usuario_adm || !dados.senha_adm) {
+      return Alert.alert("Preencha ao menos os campos obrigatórios!");
+    }
 
-      Alert.alert("Auxiliar cadastrado com sucesso!");
-      setNome(""); setUsuario(""); setSenha("");
+    try {
+      await api.post("/cadastro", dados);
+
+      Alert.alert("Sucesso!", "Cadastro realizado.");
+      router.push("/login"); // ✅ volta para login
     } catch (error) {
-      Alert.alert("Erro ao cadastrar", "Esse terreiro já possui um auxiliar.");
+      Alert.alert("Erro", "Não foi possível cadastrar.");
     }
   }
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 28 }}>Cadastrar Auxiliar</Text>
+    <ScrollView style={{ padding: 20 }}>
+      <Text style={{ fontSize: 26, fontWeight: "bold" }}>Cadastro</Text>
 
-      <TextInput placeholder="Nome" value={nome} onChangeText={setNome} style={{ borderWidth: 1, padding: 10, marginTop: 20 }} />
-      <TextInput placeholder="Usuário" value={usuario} onChangeText={setUsuario} style={{ borderWidth: 1, padding: 10, marginTop: 10 }} />
-      <TextInput placeholder="Senha" secureTextEntry value={senha} onChangeText={setSenha} style={{ borderWidth: 1, padding: 10, marginTop: 10 }} />
+      <Text style={{ marginTop: 20, fontWeight: "bold" }}>Dados do Terreiro</Text>
+      <TextInput placeholder="Nome do Terreiro" style={{ borderWidth: 1, padding: 8 }} onChangeText={(v) => handleChange("nome_terreiro", v)} />
 
-      <TouchableOpacity onPress={handleCadastro} style={{ backgroundColor: "#333", padding: 15, marginTop: 20 }}>
-        <Text style={{ color: "#fff", textAlign: "center" }}>Cadastrar</Text>
+      <Text style={{ marginTop: 20, fontWeight: "bold" }}>Administrador (Obrigatório)</Text>
+      <TextInput placeholder="Nome" style={{ borderWidth: 1, padding: 8 }} onChangeText={(v) => handleChange("nome_adm", v)} />
+      <TextInput placeholder="Usuário" style={{ borderWidth: 1, padding: 8, marginTop: 10 }} onChangeText={(v) => handleChange("usuario_adm", v)} />
+      <TextInput placeholder="Senha" secureTextEntry style={{ borderWidth: 1, padding: 8, marginTop: 10 }} onChangeText={(v) => handleChange("senha_adm", v)} />
+
+      <Text style={{ marginTop: 20, fontWeight: "bold" }}>Auxiliar (Opcional)</Text>
+      <TextInput placeholder="Nome" style={{ borderWidth: 1, padding: 8 }} onChangeText={(v) => handleChange("nome_aux", v)} />
+      <TextInput placeholder="Usuário" style={{ borderWidth: 1, padding: 8, marginTop: 10 }} onChangeText={(v) => handleChange("usuario_aux", v)} />
+      <TextInput placeholder="Senha" secureTextEntry style={{ borderWidth: 1, padding: 8, marginTop: 10 }} onChangeText={(v) => handleChange("senha_aux", v)} />
+
+      <TouchableOpacity onPress={handleCadastro} style={{ backgroundColor: "#333", padding: 15, marginTop: 30, borderRadius: 5 }}>
+        <Text style={{ textAlign: "center", color: "#fff" }}>Cadastrar</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
