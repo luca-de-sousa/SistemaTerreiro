@@ -3,11 +3,59 @@
 namespace App\Http\Controllers;
 
 use App\Models\Usuario;
+use App\Models\Terreiro;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller
 {
+    /**
+     * Cadastro inicial do sistema — cria Terreiro + Adm + (auxiliar opcional)
+     */
+    public function cadastroInicial(Request $request)
+    {
+        $request->validate([
+            'nome_terreiro' => 'required|string|max:100',
+            'nome_adm' => 'required|string|max:100',
+            'usuario_adm' => 'required|string|unique:usuarios,usuario',
+            'senha_adm' => 'required|string|min:4',
+            'nome_aux' => 'nullable|string|max:100',
+            'usuario_aux' => 'nullable|string|unique:usuarios,usuario',
+            'senha_aux' => 'nullable|string|min:4',
+        ]);
+
+        // Cria o terreiro
+        $terreiro = Terreiro::create([
+            'nome_terreiro' => $request->nome_terreiro,
+        ]);
+
+        // Cria o administrador
+        $adm = Usuario::create([
+            'id_terreiro' => $terreiro->id,
+            'nome' => $request->nome_adm,
+            'usuario' => $request->usuario_adm,
+            'senha' => Hash::make($request->senha_adm),
+            'tipo' => 'adm',
+        ]);
+
+        // Cria o auxiliar, se os dados foram informados
+        if ($request->filled(['nome_aux', 'usuario_aux', 'senha_aux'])) {
+            Usuario::create([
+                'id_terreiro' => $terreiro->id,
+                'nome' => $request->nome_aux,
+                'usuario' => $request->usuario_aux,
+                'senha' => Hash::make($request->senha_aux),
+                'tipo' => 'auxiliar',
+            ]);
+        }
+
+        return response()->json([
+            'mensagem' => 'Cadastro realizado com sucesso!',
+            'terreiro' => $terreiro,
+            'administrador' => $adm,
+        ], 201);
+    }
+
     /**
      * Lista usuários do mesmo terreiro (somente adm).
      */
@@ -34,37 +82,36 @@ class UsuarioController extends Controller
      * Cadastra um novo usuário (somente adm do terreiro pode).
      * 🔒 Garante no máximo 1 adm e 1 auxiliar por terreiro.
      */
-   public function store(StoreUsuarioRequest $request)
-{
-    $usuarioAutenticado = Usuario::find($request->id_usuario);
+    public function store(Request $request)
+    {
+        $usuarioAutenticado = Usuario::find($request->id_usuario);
 
-    if (!$usuarioAutenticado) {
-        return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        if (!$usuarioAutenticado) {
+            return response()->json(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        if ($usuarioAutenticado->tipo !== 'adm') {
+            return response()->json(['erro' => 'Apenas administradores podem cadastrar usuários'], 403);
+        }
+
+        // Garante apenas 1 adm e 1 auxiliar por terreiro
+        $existeMesmoTipo = Usuario::where('id_terreiro', $usuarioAutenticado->id_terreiro)
+            ->where('tipo', $request->tipo)
+            ->exists();
+
+        if ($existeMesmoTipo) {
+            return response()->json([
+                'erro' => "Já existe um usuário do tipo '{$request->tipo}' neste terreiro"
+            ], 422);
+        }
+
+        $data = $request->all();
+        $data['id_terreiro'] = $usuarioAutenticado->id_terreiro;
+        $data['senha'] = Hash::make($data['senha']);
+
+        $novoUsuario = Usuario::create($data);
+        return response()->json($novoUsuario, 201);
     }
-
-    if ($usuarioAutenticado->tipo !== 'adm') {
-        return response()->json(['erro' => 'Apenas administradores podem cadastrar usuários'], 403);
-    }
-
-    // Garante apenas 1 adm e 1 auxiliar por terreiro
-    $existeMesmoTipo = Usuario::where('id_terreiro', $usuarioAutenticado->id_terreiro)
-        ->where('tipo', $request->tipo)
-        ->exists();
-
-    if ($existeMesmoTipo) {
-        return response()->json([
-            'erro' => "Já existe um usuário do tipo '{$request->tipo}' neste terreiro"
-        ], 422);
-    }
-
-    $data = $request->validated(); // ✅ dados já validados automaticamente
-    $data['id_terreiro'] = $usuarioAutenticado->id_terreiro;
-    $data['senha'] = Hash::make($data['senha']);
-
-    $novoUsuario = Usuario::create($data);
-    return response()->json($novoUsuario, 201);
-}
-
 
     /**
      * Mostra um usuário específico.
@@ -85,7 +132,6 @@ class UsuarioController extends Controller
             return response()->json(['erro' => 'Sem permissão para visualizar este usuário'], 403);
         }
 
-        // Garante que sejam do mesmo terreiro
         if ($usuarioAutenticado->id_terreiro !== $usuario->id_terreiro) {
             return response()->json(['erro' => 'Usuário de outro terreiro'], 403);
         }
@@ -104,7 +150,6 @@ class UsuarioController extends Controller
             return response()->json(['erro' => 'Usuário não encontrado'], 404);
         }
 
-        // Restringe quem pode atualizar
         if (
             $usuarioAutenticado->tipo !== 'adm' &&
             $usuarioAutenticado->id !== $usuario->id
@@ -112,10 +157,8 @@ class UsuarioController extends Controller
             return response()->json(['erro' => 'Sem permissão para editar este usuário'], 403);
         }
 
-        // Impede mudar tipo/id_terreiro manualmente
         $data = $request->except(['id_terreiro', 'tipo']);
 
-        // Criptografa a senha se for alterada
         if (!empty($data['senha'])) {
             $data['senha'] = Hash::make($data['senha']);
         }
