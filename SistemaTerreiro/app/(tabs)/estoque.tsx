@@ -60,21 +60,98 @@ export default function Estoque() {
   };
 
   const escolherImagem = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert("Permissão negada", "Permita o acesso à galeria para anexar uma imagem.");
-      return;
-    }
+  Alert.alert(
+    "Selecionar imagem",
+    "Escolha de onde deseja obter a imagem:",
+    [
+      {
+        text: "Câmera",
+        onPress: async () => {
+          const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+          if (!cameraPerm.granted) {
+            return Alert.alert("Permissão negada", "Permita o acesso à câmera.");
+          }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      quality: 0.8,
-    });
+          const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            quality: 0.8,
+          });
+
+          if (!result.canceled && result.assets.length > 0) {
+            setAnexo(result.assets[0].uri);
+          }
+        },
+      },
+      {
+        text: "Galeria",
+        onPress: async () => {
+          const galleryPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (!galleryPerm.granted) {
+            return Alert.alert("Permissão negada", "Permita o acesso à galeria.");
+          }
+
+          const result = await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            quality: 0.8,
+          });
+
+          if (!result.canceled && result.assets.length > 0) {
+            setAnexo(result.assets[0].uri);
+          }
+        },
+      },
+      { text: "Cancelar", style: "cancel" },
+    ]
+  );
+};
+
+
+const atualizarImagemItem = async (item: EstoqueItem, modo: "camera" | "galeria") => {
+  try {
+    let result;
+    if (modo === "camera") {
+      const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+      if (!cameraPerm.granted) {
+        return Alert.alert("Permissão negada", "Permita o acesso à câmera.");
+      }
+      result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 });
+    } else {
+      const galleryPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!galleryPerm.granted) {
+        return Alert.alert("Permissão negada", "Permita o acesso à galeria.");
+      }
+      result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.8 });
+    }
 
     if (!result.canceled && result.assets.length > 0) {
-      setAnexo(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      const nomeArquivo = uri.split("/").pop()!;
+      const formData = new FormData();
+      formData.append("id_usuario", String(usuario.id));
+      formData.append("produto", item.produto);
+      formData.append("quantidade", String(item.quantidade));
+      formData.append("origem", item.origem);
+      formData.append("_method", "PUT");
+      formData.append("anexo", {
+        uri,
+        name: nomeArquivo,
+        type: "image/jpeg",
+      } as any);
+
+      await axios.post(`${API_URL}/estoque/${item.id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      Alert.alert("Sucesso", "Imagem atualizada com sucesso!");
+      carregarEstoques(usuario.id);
     }
-  };
+  } catch (error: any) {
+    console.error(error);
+    Alert.alert("Erro", error.response?.data?.erro || "Falha ao atualizar imagem.");
+  }
+};
+
+
 
   const salvarEstoque = async () => {
     if (!produto.trim() || !quantidade.trim()) {
@@ -98,19 +175,19 @@ export default function Estoque() {
         } as any);
       }
 
-      if (editando) {
-        // atualização
-        await axios.post(`${API_URL}/estoque/${editando.id}?_method=PUT`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        Alert.alert("Sucesso", "Item atualizado com sucesso!");
-      } else {
-        // novo item
-        await axios.post(`${API_URL}/estoque`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        Alert.alert("Sucesso", "Item adicionado!");
-      }
+   if (editando) {
+  formData.append("_method", "PUT"); // 👈 Adiciona override corretamente
+  await axios.post(`${API_URL}/estoque/${editando.id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  Alert.alert("Sucesso", "Item atualizado com sucesso!");
+} else {
+  await axios.post(`${API_URL}/estoque`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  Alert.alert("Sucesso", "Item adicionado!");
+}
+
 
       setProduto("");
       setQuantidade("");
@@ -211,39 +288,68 @@ export default function Estoque() {
         data={estoques}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={styles.item}>
-            {item.anexo && (
-              <Image
-                source={{ uri: `${API_URL.replace("/api", "")}/storage/${item.anexo}` }}
-                style={styles.thumbnail}
-              />
-            )}
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={styles.itemTitle}>{item.produto}</Text>
-              <Text style={styles.itemSub}>Quantidade: {item.quantidade}</Text>
-              <Text style={styles.itemSub}>Origem: {item.origem}</Text>
-              <Text style={styles.itemSub}>
-                {new Date(item.data_registro).toLocaleDateString("pt-BR")}
-              </Text>
-            </View>
+        <View style={styles.item}>
+  {item.anexo ? (
+    <Image
+      source={{ uri: `${API_URL.replace("/api", "")}/storage/${item.anexo}` }}
+      style={styles.thumbnail}
+    />
+  ) : (
+    <View
+      style={[
+        styles.thumbnail,
+        { backgroundColor: "#EEE", justifyContent: "center", alignItems: "center" },
+      ]}
+    >
+      <Text style={{ color: "#666", fontSize: 12 }}>Sem Imagem</Text>
+    </View>
+  )}
 
-            {usuario?.tipo === "adm" && (
-              <View>
-                <TouchableOpacity
-                  style={[styles.editButton, { marginBottom: 4 }]}
-                  onPress={() => editarItem(item)}
-                >
-                  <Text style={styles.editText}>Editar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => excluirItem(item.id)}
-                >
-                  <Text style={styles.deleteText}>Excluir</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
+  <View style={{ flex: 1, marginLeft: 10 }}>
+    <Text style={styles.itemTitle}>{item.produto}</Text>
+    <Text style={styles.itemSub}>Quantidade: {item.quantidade}</Text>
+    <Text style={styles.itemSub}>Origem: {item.origem}</Text>
+    <Text style={styles.itemSub}>
+      {new Date(item.data_registro).toLocaleDateString("pt-BR")}
+    </Text>
+
+    {/* Botões dentro do card */}
+    {(usuario?.tipo === "adm" || usuario?.tipo === "auxiliar") && (
+      <View style={{ flexDirection: "row", marginTop: 6, gap: 8 }}>
+        <TouchableOpacity
+          style={[styles.smallButton, { backgroundColor: "#2E8B57" }]}
+          onPress={() => atualizarImagemItem(item, "camera")}
+        >
+          <Text style={{ color: "#fff" }}>📷</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.smallButton, { backgroundColor: "#4682B4" }]}
+          onPress={() => atualizarImagemItem(item, "galeria")}
+        >
+          <Text style={{ color: "#fff" }}>🖼️</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+  </View>
+
+  {usuario?.tipo === "adm" && (
+    <View>
+      <TouchableOpacity
+        style={[styles.editButton, { marginBottom: 4 }]}
+        onPress={() => editarItem(item)}
+      >
+        <Text style={styles.editText}>Editar</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => excluirItem(item.id)}
+      >
+        <Text style={styles.deleteText}>Excluir</Text>
+      </TouchableOpacity>
+    </View>
+  )}
+</View>
+
         )}
         ListEmptyComponent={
           <Text style={{ textAlign: "center", marginTop: 20 }}>
@@ -267,6 +373,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
   },
+  smallButton: {
+  width: 35,
+  height: 35,
+  borderRadius: 6,
+  alignItems: "center",
+  justifyContent: "center",
+},
   option: {
     flex: 1,
     padding: 10,
@@ -301,3 +414,5 @@ const styles = StyleSheet.create({
   deleteButton: { backgroundColor: "#8B0000", padding: 6, borderRadius: 6 },
   deleteText: { color: "#fff", fontWeight: "600" },
 });
+
+
