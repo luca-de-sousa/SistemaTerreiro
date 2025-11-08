@@ -139,3 +139,4 @@ return response()->json($estoque, 200);
         return response()->json(['mensagem' => 'Item removido com sucesso']);
     }
 }
+

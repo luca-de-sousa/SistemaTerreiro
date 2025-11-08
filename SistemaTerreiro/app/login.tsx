@@ -18,7 +18,8 @@ export default function Login() {
       await AsyncStorage.setItem("token", response.data.token);
       await AsyncStorage.setItem("usuario", JSON.stringify(response.data.usuario));
 
-      router.push("/home");
+     router.replace("/(tabs)/perfil");
+
 
     } catch (error) {
       Alert.alert("Erro", "Usuário ou senha inválidos.");
