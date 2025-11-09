@@ -182,9 +182,7 @@ const baseURL = api.defaults?.baseURL?.replace('/api', '') ?? '';
           ? "🟢 Arrecadação"
           : item.tipo === "despesa"
           ? "🔴 Despesa"
-          : item.tipo === "estoque_entrada"
-          ? "📦 Entrada de Estoque"
-          : "📤 Saída de Estoque"}
+          : item.tipo === "estoque_entrada"}
       </Text>
 
       <Text style={styles.desc}>{item.descricao}</Text>
@@ -299,8 +297,6 @@ const baseURL = api.defaults?.baseURL?.replace('/api', '') ?? '';
             <Picker.Item label="Selecione o tipo" value="" />
             <Picker.Item label="Arrecadação" value="arrecadacao" />
             <Picker.Item label="Despesa" value="despesa" />
-            <Picker.Item label="Entrada de Estoque" value="estoque_entrada" />
-            <Picker.Item label="Saída de Estoque" value="estoque_saida" />
           </Picker>
 
           <TextInput
