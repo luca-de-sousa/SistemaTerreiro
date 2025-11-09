@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->foreignId('id_terreiro')
                   ->constrained('terreiros')
                   ->onDelete('cascade');
-            $table->enum('tipo', ['arrecadacao', 'despesa', 'estoque_entrada', 'estoque_saida']);
+            $table->enum('tipo', ['arrecadacao', 'despesa']);
             $table->string('descricao', 150);
             $table->decimal('valor', 10, 2);
             $table->date('data');
