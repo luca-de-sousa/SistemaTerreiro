@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Perfil() {
   const router = useRouter();
@@ -55,19 +55,21 @@ export default function Perfil() {
               <Text style={styles.buttonText}>Gerenciar Finanças</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => Alert.alert("Em breve", "Área de Relatórios ainda será implementada.")}
-            >
-              <Text style={styles.buttonText}>Relatórios</Text>
-            </TouchableOpacity>
+           <TouchableOpacity
+  style={styles.button}
+  onPress={() => router.push("/(tabs)/relatorios")}
+>
+  <Text style={styles.buttonText}>Relatórios</Text>
+</TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => Alert.alert("Em breve", "Gestão de Auxiliares ainda será implementada.")}
-            >
-              <Text style={styles.buttonText}>Gerenciar Auxiliares</Text>
-            </TouchableOpacity>
+
+          <TouchableOpacity
+  style={styles.button}
+  onPress={() => router.push("/(tabs)/gerenciarAuxiliar")}
+>
+  <Text style={styles.buttonText}>Gerenciar Auxiliar</Text>
+</TouchableOpacity>
+
           </>
         ) : (
           <>
