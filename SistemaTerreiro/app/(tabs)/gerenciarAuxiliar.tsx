@@ -1,4 +1,3 @@
-// gerenciarAuxiliar.tsx
 import { Ionicons } from "@expo/vector-icons"; // ← IMPORT ESSENCIAL
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
