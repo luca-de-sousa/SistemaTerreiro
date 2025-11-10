@@ -1,3 +1,5 @@
+// gerenciarAuxiliar.tsx
+import { Ionicons } from "@expo/vector-icons"; // ← IMPORT ESSENCIAL
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
 import {
@@ -18,6 +20,7 @@ export default function GerenciarAuxiliar() {
   const [auxiliar, setAuxiliar] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const [form, setForm] = useState({
     nome: "",
@@ -29,47 +32,45 @@ export default function GerenciarAuxiliar() {
     carregarUsuario();
   }, []);
 
- async function carregarUsuario() {
-  try {
-    const userData = await AsyncStorage.getItem("usuario");
-    if (userData) {
-      const user = JSON.parse(userData);
-      // 🔁 Garante compatibilidade: converte id_usuario → id
-      const usuarioNormalizado = {
-        ...user,
-        id: user.id ?? user.id_usuario,
-      };
+  async function carregarUsuario() {
+    try {
+      const userData = await AsyncStorage.getItem("usuario");
+      if (userData) {
+        const user = JSON.parse(userData);
+        // 🔁 Garante compatibilidade: converte id_usuario → id
+        const usuarioNormalizado = {
+          ...user,
+          id: user.id ?? user.id_usuario,
+        };
 
-      setUsuario(usuarioNormalizado);
-      console.log("Usuário logado:", usuarioNormalizado);
-      await carregarAuxiliar(usuarioNormalizado);
+        setUsuario(usuarioNormalizado);
+        console.log("Usuário logado:", usuarioNormalizado);
+        await carregarAuxiliar(usuarioNormalizado);
+      }
+    } catch (error) {
+      console.log("Erro ao carregar usuário:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.log("Erro ao carregar usuário:", error);
-  } finally {
-    setLoading(false);
   }
-}
-
 
   async function carregarAuxiliar(user: any) {
-  try {
-    const response = await api.get("/usuarios", {
-      params: { id_usuario: user.id }, // ✅ usa o id real do usuário
-    });
+    try {
+      const response = await api.get("/usuarios", {
+        params: { id_usuario: user.id }, // ✅ usa o id real do usuário
+      });
 
-    const auxiliarEncontrado = response.data.find(
-      (u: any) => u.tipo === "auxiliar"
-    );
+      const auxiliarEncontrado = response.data.find(
+        (u: any) => u.tipo === "auxiliar"
+      );
 
-    setAuxiliar(auxiliarEncontrado || null);
-  } catch (error) {
-    console.log("Erro ao carregar auxiliar:", error);
+      setAuxiliar(auxiliarEncontrado || null);
+    } catch (error) {
+      console.log("Erro ao carregar auxiliar:", error);
+    }
   }
-}
 
-
-    async function salvarAuxiliar() {
+  async function salvarAuxiliar() {
     if (!form.nome || !form.usuario || (!auxiliar && !form.senha)) {
       return Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
     }
@@ -79,25 +80,23 @@ export default function GerenciarAuxiliar() {
 
       if (auxiliar) {
         // Atualiza auxiliar existente
-       await api.put(`/usuarios/${auxiliar.id}`, {
-  id_usuario: usuario.id, // ✅ garante consistência
-  nome: form.nome,
-  usuario: form.usuario,
-  senha: form.senha || undefined,
-});
-
+        await api.put(`/usuarios/${auxiliar.id}`, {
+          id_usuario: usuario.id, // ✅ garante consistência
+          nome: form.nome,
+          usuario: form.usuario,
+          senha: form.senha || undefined,
+        });
 
         Alert.alert("Sucesso", "Auxiliar atualizado com sucesso!");
       } else {
         // Cria novo auxiliar
-       await api.post("/usuarios", {
-  id_usuario: usuario.id, // ✅ mesmo ajuste
-  nome: form.nome,
-  usuario: form.usuario,
-  senha: form.senha,
-  tipo: "auxiliar",
-});
-
+        await api.post("/usuarios", {
+          id_usuario: usuario.id, // ✅ mesmo ajuste
+          nome: form.nome,
+          usuario: form.usuario,
+          senha: form.senha,
+          tipo: "auxiliar",
+        });
 
         Alert.alert("Sucesso", "Auxiliar cadastrado com sucesso!");
       }
@@ -125,7 +124,7 @@ export default function GerenciarAuxiliar() {
           try {
             setLoading(true);
             // ✅ Envia o id_usuario como query param explicitamente
-           await api.delete(`/usuarios/${auxiliar.id}?id_usuario=${usuario.id}`);
+            await api.delete(`/usuarios/${auxiliar.id}?id_usuario=${usuario.id}`);
 
             Alert.alert("Sucesso", "Auxiliar removido com sucesso!");
             setAuxiliar(null);
@@ -142,7 +141,6 @@ export default function GerenciarAuxiliar() {
       },
     ]);
   }
-
 
   if (loading) {
     return (
@@ -207,13 +205,27 @@ export default function GerenciarAuxiliar() {
             <Text style={styles.label}>
               {auxiliar ? "Nova Senha (opcional)" : "Senha"}
             </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Senha"
-              secureTextEntry
-              value={form.senha}
-              onChangeText={(t) => setForm({ ...form, senha: t })}
-            />
+
+            {/* campo senha com olhinho */}
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                placeholder="Senha"
+                secureTextEntry={!mostrarSenha}
+                value={form.senha}
+                onChangeText={(t) => setForm({ ...form, senha: t })}
+              />
+              <TouchableOpacity
+                onPress={() => setMostrarSenha(!mostrarSenha)}
+                style={styles.eyeButton}
+              >
+                <Ionicons
+                  name={mostrarSenha ? "eye-off" : "eye"}
+                  size={22}
+                  color="#555"
+                />
+              </TouchableOpacity>
+            </View>
 
             <TouchableOpacity style={styles.saveButton} onPress={salvarAuxiliar}>
               <Text style={styles.saveText}>
@@ -294,7 +306,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 12,
+    backgroundColor: "#fff",
   },
+
+  /* ← ADICIONADO: container do campo senha com olho */
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 0, // já usamos o estilo interno do input
+    marginBottom: 12,
+  },
+  eyeButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+
   saveButton: {
     backgroundColor: "#2F4F4F",
     padding: 14,
