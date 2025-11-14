@@ -3,14 +3,14 @@ import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 interface EstoqueItem {
@@ -31,7 +31,7 @@ export default function Estoque() {
   const [usuario, setUsuario] = useState<any | null>(null);
   const [editando, setEditando] = useState<EstoqueItem | null>(null);
 
-  const API_URL = "http://192.168.15.5:8000/api";
+  const API_URL = "http://192.168.12.135:8000/api";
 
   useEffect(() => {
     const carregarUsuario = async () => {
