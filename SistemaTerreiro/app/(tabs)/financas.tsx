@@ -259,7 +259,7 @@ const baseURL = api.defaults?.baseURL?.replace('/api', '') ?? '';
 
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#e1eeffff" }}>
       <Text style={styles.header}>Gestão Financeira</Text>
 
       <FlatList
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
-    marginVertical: 16,
+    marginTop: 50,
     color: "#2F4F4F",
   },
   label: {

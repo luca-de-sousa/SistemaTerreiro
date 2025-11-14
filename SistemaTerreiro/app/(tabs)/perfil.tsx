@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 30,
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#e1eeffff",
   },
   title: {
     fontSize: 24,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   bold: {
     fontWeight: "bold",
-    color: "#000",
+    color: "#20753dff",
   },
   section: {
     marginTop: 40,
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   button: {
-    backgroundColor: "#4A708B",
+    backgroundColor: "#356999ff",
     padding: 15,
     borderRadius: 10,
     marginVertical: 8,

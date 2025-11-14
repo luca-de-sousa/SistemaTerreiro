@@ -284,7 +284,7 @@ const atualizarImagemItem = async (item: EstoqueItem, modo: "camera" | "galeria"
       )}
 
       <FlatList
-        style={{ marginTop: 12 }}
+        style={{ marginTop: 12, marginBottom: 50 }}
         data={estoques}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
@@ -317,13 +317,13 @@ const atualizarImagemItem = async (item: EstoqueItem, modo: "camera" | "galeria"
     {(usuario?.tipo === "adm" || usuario?.tipo === "auxiliar") && (
       <View style={{ flexDirection: "row", marginTop: 6, gap: 8 }}>
         <TouchableOpacity
-          style={[styles.smallButton, { backgroundColor: "#2E8B57" }]}
+          style={[styles.smallButton, { backgroundColor: "#dbf0f0ff" }]}
           onPress={() => atualizarImagemItem(item, "camera")}
         >
           <Text style={{ color: "#fff" }}>📷</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.smallButton, { backgroundColor: "#4682B4" }]}
+          style={[styles.smallButton, { backgroundColor: "#dbf0f0ff" }]}
           onPress={() => atualizarImagemItem(item, "galeria")}
         >
           <Text style={{ color: "#fff" }}>🖼️</Text>
@@ -362,9 +362,9 @@ const atualizarImagemItem = async (item: EstoqueItem, modo: "camera" | "galeria"
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#FAFAFA" },
-  title: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginBottom: 10, color: "#2F4F4F" },
-  form: { marginVertical: 10 },
+  container: { flex: 1, padding: 16, backgroundColor: "#e1eeffff" },
+  title: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginTop: 30, marginBottom: 10, color: "#2F4F4F" },
+  form: { marginVertical: 25 },
   input: {
     backgroundColor: "#FFF",
     borderWidth: 1,
@@ -385,6 +385,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
+    backgroundColor: "#c8ddffff",
     borderColor: "#DDD",
     alignItems: "center",
     marginRight: 8,
@@ -392,9 +393,9 @@ const styles = StyleSheet.create({
   optionSelected: { backgroundColor: "#4A708B", borderColor: "#4A708B" },
   optionText: { color: "#333" },
   optionTextSelected: { color: "#fff", fontWeight: "600" },
-  button: { backgroundColor: "#4A708B", padding: 12, borderRadius: 8, marginTop: 8 },
+  button: { backgroundColor: "#356999ff", padding: 12, borderRadius: 8, marginTop: 8 },
   buttonText: { color: "#fff", textAlign: "center", fontWeight: "bold" },
-  imageButton: { backgroundColor: "#2F4F4F", padding: 10, borderRadius: 8, marginBottom: 8 },
+  imageButton: { backgroundColor: "#2F4F4F", padding: 10, borderRadius: 8, marginBottom: 8, marginTop: 13 },
   imageButtonText: { color: "#fff", textAlign: "center" },
   previewImage: { width: "100%", height: 150, borderRadius: 8, marginVertical: 10 },
   item: {
@@ -405,11 +406,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignItems: "center",
     elevation: 2,
+    color: "#e1eeffff"
   },
   itemTitle: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
   itemSub: { color: "#555", fontSize: 13 },
   thumbnail: { width: 60, height: 60, borderRadius: 8 },
-  editButton: { backgroundColor: "#1E90FF", padding: 6, borderRadius: 6 },
+  editButton: { backgroundColor: "#599f44ff", padding: 6, borderRadius: 6 },
   editText: { color: "#fff", fontWeight: "600" },
   deleteButton: { backgroundColor: "#8B0000", padding: 6, borderRadius: 6 },
   deleteText: { color: "#fff", fontWeight: "600" },
