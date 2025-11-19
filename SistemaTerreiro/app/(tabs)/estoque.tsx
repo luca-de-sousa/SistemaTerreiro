@@ -2,6 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
+import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {
   Alert,
   FlatList,
@@ -31,7 +33,7 @@ export default function Estoque() {
   const [usuario, setUsuario] = useState<any | null>(null);
   const [editando, setEditando] = useState<EstoqueItem | null>(null);
 
-  const API_URL = "http://192.168.12.135:8000/api";
+  const API_URL = "http://192.168.0.21:8000/api";
 
   useEffect(() => {
     const carregarUsuario = async () => {
@@ -317,16 +319,16 @@ const atualizarImagemItem = async (item: EstoqueItem, modo: "camera" | "galeria"
     {(usuario?.tipo === "adm" || usuario?.tipo === "auxiliar") && (
       <View style={{ flexDirection: "row", marginTop: 6, gap: 8 }}>
         <TouchableOpacity
-          style={[styles.smallButton, { backgroundColor: "#dbf0f0ff" }]}
+          style={[styles.smallButton, { backgroundColor: "#9cdbffff" }]}
           onPress={() => atualizarImagemItem(item, "camera")}
         >
-          <Text style={{ color: "#fff" }}>📷</Text>
+          <Text style={{ color: "#fff" }}><Entypo name="camera" size={24} color="black" /></Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.smallButton, { backgroundColor: "#dbf0f0ff" }]}
+          style={[styles.smallButton, { backgroundColor: "#9cdbffff" }]}
           onPress={() => atualizarImagemItem(item, "galeria")}
         >
-          <Text style={{ color: "#fff" }}>🖼️</Text>
+          <Text style={{ color: "#fff" }}><FontAwesome name="picture-o" size={24} color="black" /></Text>
         </TouchableOpacity>
       </View>
     )}
@@ -338,13 +340,13 @@ const atualizarImagemItem = async (item: EstoqueItem, modo: "camera" | "galeria"
         style={[styles.editButton, { marginBottom: 4 }]}
         onPress={() => editarItem(item)}
       >
-        <Text style={styles.editText}>Editar</Text>
+        <Text style={styles.editText}><FontAwesome name="edit" size={24} color="white" /></Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.deleteButton}
         onPress={() => excluirItem(item.id)}
       >
-        <Text style={styles.deleteText}>Excluir</Text>
+        <Text style={styles.deleteText}><FontAwesome name="trash" size={24} color="white" /></Text>
       </TouchableOpacity>
     </View>
   )}
@@ -363,7 +365,7 @@ const atualizarImagemItem = async (item: EstoqueItem, modo: "camera" | "galeria"
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#e1eeffff" },
-  title: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginTop: 30, marginBottom: 10, color: "#2F4F4F" },
+  title: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginTop: 50, marginBottom: 10, color: "#2F4F4F" },
   form: { marginVertical: 25 },
   input: {
     backgroundColor: "#FFF",
@@ -385,12 +387,12 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    backgroundColor: "#c8ddffff",
+    backgroundColor: "#baccebff",
     borderColor: "#DDD",
     alignItems: "center",
     marginRight: 8,
   },
-  optionSelected: { backgroundColor: "#4A708B", borderColor: "#4A708B" },
+  optionSelected: { backgroundColor: "#2f8682ff", borderColor: "#4A708B" },
   optionText: { color: "#333" },
   optionTextSelected: { color: "#fff", fontWeight: "600" },
   button: { backgroundColor: "#356999ff", padding: 12, borderRadius: 8, marginTop: 8 },
@@ -411,10 +413,10 @@ const styles = StyleSheet.create({
   itemTitle: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
   itemSub: { color: "#555", fontSize: 13 },
   thumbnail: { width: 60, height: 60, borderRadius: 8 },
-  editButton: { backgroundColor: "#599f44ff", padding: 6, borderRadius: 6 },
-  editText: { color: "#fff", fontWeight: "600" },
+  editButton: { backgroundColor: "#2f8682ff", padding: 6, borderRadius: 6 },
+  editText: { color: "#fff", fontWeight: "600", textAlign: "center" },
   deleteButton: { backgroundColor: "#8B0000", padding: 6, borderRadius: 6 },
-  deleteText: { color: "#fff", fontWeight: "600" },
+  deleteText: { color: "#fff", fontWeight: "600", textAlign: "center" },
 });
 
 

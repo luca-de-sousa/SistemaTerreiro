@@ -162,7 +162,7 @@ export default function GerenciarAuxiliar() {
 
             <View style={styles.cardButtons}>
               <TouchableOpacity
-                style={[styles.smallButton, { backgroundColor: "#4A708B" }]}
+                style={[styles.smallButton, { backgroundColor: "#2f8682ff" }]}
                 onPress={() => {
                   setEditando(true);
                   setForm({
@@ -249,17 +249,20 @@ export default function GerenciarAuxiliar() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 20,
+    backgroundColor: "#e1eeffff"
   },
   header: {
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
     marginVertical: 20,
+    marginTop: 50,
     color: "#2F4F4F",
   },
   card: {
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#ffffffff",
     padding: 20,
     borderRadius: 12,
     marginBottom: 20,
@@ -270,7 +273,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
     color: "#2F4F4F",
     marginBottom: 5,
   },
@@ -321,7 +324,7 @@ const styles = StyleSheet.create({
   },
 
   saveButton: {
-    backgroundColor: "#2F4F4F",
+    backgroundColor: "#2f8682ff",
     padding: 14,
     borderRadius: 8,
     marginTop: 10,
@@ -332,7 +335,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   cancelButton: {
-    backgroundColor: "#999",
+    backgroundColor: "#8B0000",
     padding: 14,
     borderRadius: 8,
     marginTop: 10,

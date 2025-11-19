@@ -6,6 +6,7 @@ import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import * as Linking from "expo-linking";
 import React, { useEffect, useState } from "react";
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import {
   Alert,
@@ -188,6 +189,8 @@ const baseURL = api.defaults?.baseURL?.replace('/api', '') ?? '';
       <Text style={styles.desc}>{item.descricao}</Text>
       <Text style={styles.valor}>R$ {parseFloat(item.valor).toFixed(2)}</Text>
       <Text style={styles.data}>
+        <FontAwesome name="calendar-o" size={17} color="black" />
+        <Text> </Text>
         {new Date(item.data).toLocaleDateString("pt-BR")}
       </Text>
 
@@ -395,25 +398,26 @@ const styles = StyleSheet.create({
     color: "#2F4F4F",
   },
   card: {
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#ffffffff",
     padding: 16,
     borderRadius: 10,
+    elevation: 2,
     marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
   },
-  tipo: { fontWeight: "bold", color: "#2F4F4F" },
+  tipo: { fontWeight: "600", fontSize: 17, color: "#2F4F4F" },
   desc: { color: "#333", marginTop: 4 },
   valor: { color: "#007BFF", marginTop: 4, fontWeight: "bold" },
-  data: { color: "#666", fontSize: 12 },
+  data: { color: "#666", marginTop: 4, fontSize: 12 },
   imagem: { width: 50, height: 50, borderRadius: 6, marginLeft: 10 },
   excluirBtn: {
-    backgroundColor: "#B22222",
+    backgroundColor: "#8B0000",
     padding: 6,
     borderRadius: 8,
     marginLeft: 10,
   },editarBtn: {
-  backgroundColor: "#2F4F4F",
+  backgroundColor: "#2f8682ff",
   padding: 6,
   borderRadius: 8,
   marginLeft: 10,
@@ -422,7 +426,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 25,
     right: 25,
-    backgroundColor: "#2F4F4F",
+    backgroundColor: "#2f8682ff",
     width: 60,
     height: 60,
     borderRadius: 30,

@@ -54,12 +54,14 @@ export default function Relatorios() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <Text style={styles.header}>Relatórios Financeiros</Text>
-
       {loading ? (
         <ActivityIndicator size="large" color="#2F4F4F" style={{ marginTop: 30 }} />
       ) : (
         <ScrollView contentContainerStyle={styles.container}>
+          <View>
+            <Text style={styles.header}>Relatórios Financeiros</Text>
+          </View>
+
           <View style={styles.card}>
             <Text style={styles.label}>Total de Arrecadações</Text>
             <Text style={[styles.valor, { color: "#228B22" }]}>
@@ -100,22 +102,29 @@ const styles = StyleSheet.create({
     color: "#2F4F4F",
   },
   container: {
+    flexGrow: 1,
+    alignItems: "center",
+    justifyContent: "center",
     padding: 16,
+    backgroundColor: "#e1eeffff"
   },
   card: {
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#ffffffff",
     padding: 20,
+    width: 300,
     borderRadius: 12,
     marginBottom: 15,
     elevation: 3,
   },
   label: {
     fontSize: 18,
+    textAlign: 'center',
     fontWeight: "bold",
     color: "#2F4F4F",
     marginBottom: 8,
   },
   valor: {
+    textAlign: 'center',
     fontSize: 22,
     fontWeight: "bold",
   },

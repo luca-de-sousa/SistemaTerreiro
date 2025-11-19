@@ -2,6 +2,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Entypo from '@expo/vector-icons/Entypo';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 export default function Perfil() {
   const router = useRouter();
@@ -48,18 +51,18 @@ export default function Perfil() {
         {usuario.tipo === "adm" ? (
           <>
             <TouchableOpacity style={styles.button} onPress={() => router.push("/(tabs)/estoque")}>
-              <Text style={styles.buttonText}>Gerenciar Estoque</Text>
+              <Text style={styles.buttonText}><Entypo name="box" size={24} color="white" /> Gerenciar Estoque</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.button} onPress={() => router.push("/(tabs)/financas")}>
-              <Text style={styles.buttonText}>Gerenciar Finanças</Text>
+              <Text style={styles.buttonText}><MaterialIcons name="attach-money" size={24} color="white" /> Gerenciar Finanças</Text>
             </TouchableOpacity>
 
            <TouchableOpacity
   style={styles.button}
   onPress={() => router.push("/(tabs)/relatorios")}
 >
-  <Text style={styles.buttonText}>Relatórios</Text>
+  <Text style={styles.buttonText}><Entypo name="bar-graph" size={24} color="white" /> Relatórios</Text>
 </TouchableOpacity>
 
 
@@ -67,28 +70,28 @@ export default function Perfil() {
   style={styles.button}
   onPress={() => router.push("/(tabs)/gerenciarAuxiliar")}
 >
-  <Text style={styles.buttonText}>Gerenciar Auxiliar</Text>
+  <Text style={styles.buttonText}><Entypo name="users" size={24} color="white" /> Gerenciar Auxiliar</Text>
 </TouchableOpacity>
 
           </>
         ) : (
           <>
             <TouchableOpacity style={styles.button} onPress={() => router.push("/(tabs)/estoque")}>
-              <Text style={styles.buttonText}>Registrar Movimentação de Estoque</Text>
+              <Text style={styles.buttonText}><Entypo name="box" size={24} color="white" /> Registrar Movimentação de Estoque</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.button}
               onPress={() => router.push("/(tabs)/financas")}
             >
-              <Text style={styles.buttonText}>Consultar Finanças</Text>
+              <Text style={styles.buttonText}><MaterialIcons name="attach-money" size={24} color="white" /> Consultar Finanças</Text>
             </TouchableOpacity>
           </>
         )}
       </View>
 
       <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
-        <Text style={styles.buttonText}>Sair do Aplicativo</Text>
+        <Text style={styles.buttonText}><FontAwesome5 name="door-open" size={24} color="white" /> Sair do Aplicativo</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -109,7 +112,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: "bold",
     color: "#333",
     marginTop: 8,
     textAlign: "center",

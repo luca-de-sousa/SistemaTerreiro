@@ -64,10 +64,10 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 30 },
+  container: { backgroundColor: "#e1eeffff", flex: 1, justifyContent: "center", padding: 30 },
   title: { fontSize: 30, fontWeight: "bold", marginBottom: 40, textAlign: "center" },
-  input: { borderWidth: 1, padding: 12, borderRadius: 8, marginTop: 10 },
-  button: { backgroundColor: "#2F4F4F", padding: 15, marginTop: 20, borderRadius: 8 },
+  input: { backgroundColor: "#fff", borderWidth: 1, padding: 12, borderColor: "#868686ff", borderRadius: 8, marginTop: 10 },
+  button: { backgroundColor: "#2f8682ff", padding: 15, marginTop: 20, borderRadius: 8 },
   buttonText: { color: "#fff", textAlign: "center", fontSize: 16 },
-  link: { marginTop: 25, textAlign: "center", color: "#007bff", fontWeight: "600" },
+  link: { marginTop: 25, textAlign: "center", color: "#0e37bdff", fontWeight: "600" },
 });
