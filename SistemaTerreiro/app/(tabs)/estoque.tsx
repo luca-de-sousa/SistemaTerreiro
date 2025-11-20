@@ -1,9 +1,9 @@
+import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
-import Entypo from '@expo/vector-icons/Entypo';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {
   Alert,
   FlatList,
@@ -33,7 +33,7 @@ export default function Estoque() {
   const [usuario, setUsuario] = useState<any | null>(null);
   const [editando, setEditando] = useState<EstoqueItem | null>(null);
 
-  const API_URL = "http://192.168.0.21:8000/api";
+  const API_URL = "http://192.168.12.135:8000/api";
 
   useEffect(() => {
     const carregarUsuario = async () => {
